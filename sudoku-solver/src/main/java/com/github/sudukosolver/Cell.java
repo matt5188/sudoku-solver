@@ -9,22 +9,23 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- *
+ *  Internal class to represent a single cell on a suduko board
  * @author matt
  */
-class Square implements Comparable<Square> {
+class Cell implements Comparable<Cell> {
 
+    //x, y coordinate of square, 0,0 is top left
     private int x, y, value;
     //Local row
-    private List<Square> row = new ArrayList<Square>();
+    private List<Cell> row = new ArrayList<Cell>();
     //Local column
-    private List<Square> column = new ArrayList<Square>();
+    private List<Cell> column = new ArrayList<Cell>();
     //Local grid
-    private List<Square> localGrid = new LinkedList<Square>();
+    private List<Cell> localNonet = new LinkedList<Cell>();
     //If this value was specified when Square was initialized then isFinal is true
     private boolean isFinal;
 
-    public Square(int x, int y, int value) {
+    public Cell(int x, int y, int value) {
         this.x = x;
         this.y = y;
         this.value = value;
@@ -33,16 +34,16 @@ class Square implements Comparable<Square> {
         }
     }
 
-    public void addRowSquare(Square square) {
+    public void addRowCell(Cell square) {
         this.row.add(square);
     }
 
-    public void addColumnSquare(Square square) {
+    public void addColumnSquare(Cell square) {
         this.column.add(square);
     }
 
-    private void addGridSquare(Square square) {
-        this.localGrid.add(square);
+    private void addNonetCell(Cell square) {
+        this.localNonet.add(square);
     }
 
     private int getX() {
@@ -53,15 +54,15 @@ class Square implements Comparable<Square> {
         return y;
     }
 
-    public List<Square> getGrid() {
-        return localGrid;
+    public List<Cell> getGrid() {
+        return localNonet;
     }
 
-    public List<Square> getColumn() {
+    public List<Cell> getColumn() {
         return column;
     }
 
-    public List<Square> getRow() {
+    public List<Cell> getRow() {
         return row;
     }
 
@@ -69,16 +70,16 @@ class Square implements Comparable<Square> {
         return value == 0;
     }
 
-    public void setRow(List<Square> row) {
+    public void setRow(List<Cell> row) {
         this.row = row;
     }
 
-    public void setColumn(List<Square> column) {
+    public void setColumn(List<Cell> column) {
         this.column = column;
     }
 
-    public void setLocalGrid(List<Square> grid) {
-        this.localGrid = grid;
+    public void setLocalNonet(List<Cell> grid) {
+        this.localNonet = grid;
     }
 
     @Override
@@ -86,18 +87,18 @@ class Square implements Comparable<Square> {
         return "Square{" + "x=" + x + "y=" + y + "value=" + value + '}';
     }
 
-    public int compareTo(Square o) {
-        int xComp = new Integer(x).compareTo(o.getX());
-        if (xComp == 0) {
-            return new Integer(y).compareTo(o.getY());
+    public int compareTo(Cell o) {
+        int yComp = new Integer(y).compareTo(o.getY());
+        if (yComp == 0) {
+            return new Integer(x).compareTo(o.getX());
         }
-        return xComp;
+        return yComp;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Square) {
-            Square other = (Square) obj;
+        if (obj instanceof Cell) {
+            Cell other = (Cell) obj;
             if (other.x == this.x && other.y == this.y) {
                 return true;
             }
@@ -117,7 +118,7 @@ class Square implements Comparable<Square> {
         if (!isSet()) {
             return false;
         }
-        for (Square s : column) {
+        for (Cell s : column) {
             if (this.equals(s)) {
                 continue;
             }
@@ -125,7 +126,7 @@ class Square implements Comparable<Square> {
                 return false;
             }
         }
-        for (Square s : localGrid) {
+        for (Cell s : localNonet) {
             if (this.equals(s)) {
                 continue;
             }
@@ -133,7 +134,7 @@ class Square implements Comparable<Square> {
                 return false;
             }
         }
-        for (Square s : row) {
+        for (Cell s : row) {
             if (this.equals(s)) {
                 continue;
             }
@@ -168,3 +169,4 @@ class Square implements Comparable<Square> {
         return value;
     }
 }
+

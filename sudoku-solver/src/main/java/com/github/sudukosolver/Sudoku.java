@@ -16,10 +16,8 @@ import java.util.Scanner;
  *
  */
 public class Sudoku {
-
-    private static final String FILE_DELIMITER = ",";
     // Internal representation of the board
-    private List<Square> board = new ArrayList<Square>(81);
+    private List<Cell> board = new ArrayList<Cell>(81);
     private boolean isComplete;
     // Milliseconds that this puzzle took to solve, or -1 if unsolved
     private long timeToSolve;
@@ -47,27 +45,27 @@ public class Sudoku {
          * (x/3)+((y/3)*3) which means index will move 1 value every 3
          * iterations across the y or x axis ;
          */
-        List<List<Square>> column = new ArrayList<List<Square>>(9);
-        List<List<Square>> grid = new ArrayList<List<Square>>(9);
-        List<List<Square>> rows = new ArrayList<List<Square>>(9);
+        List<List<Cell>> column = new ArrayList<List<Cell>>(9);
+        List<List<Cell>> grid = new ArrayList<List<Cell>>(9);
+        List<List<Cell>> rows = new ArrayList<List<Cell>>(9);
 
         Scanner scan = new Scanner(new File(filepath));
 
         for (int i = 0; i < 9; i++) {
-            column.add(new ArrayList<Square>());
-            grid.add(new ArrayList<Square>());
+            column.add(new ArrayList<Cell>());
+            grid.add(new ArrayList<Cell>());
         }
 
         int gridIndex = 0;
         for (int y = 0; y < 9; y++) {
-            List<Square> currentRow = new ArrayList<Square>();
+            List<Cell> currentRow = new ArrayList<Cell>();
             rows.add(currentRow);
             String[] nextRow = scan.nextLine().split(FILE_DELIMITER);
             for (int x = 0; x < 9; x++) {
 
                 gridIndex = (x / 3) + ((y / 3) * 3);
-                List<Square> currentColumn = column.get(x);
-                List<Square> currentGrid = grid.get(gridIndex);
+                List<Cell> currentColumn = column.get(x);
+                List<Cell> currentNonet = grid.get(gridIndex);
 
                 int value = 0;
                 try {
@@ -76,17 +74,17 @@ public class Sudoku {
                 }
 
                 // Create a new square to represent this location on the board
-                Square s = new Square(y, x, value);
+                Cell s = new Cell(y, x, value);
                 // Keep a pointer to squares local to this (row, local grid,
                 // column)
                 s.setRow(currentRow);
                 s.setColumn(currentColumn);
-                s.setLocalGrid(currentGrid);
+                s.setLocalNonet(currentNonet);
 
                 // Add square to local row, column and grid
                 currentRow.add(s);
                 currentColumn.add(s);
-                currentGrid.add(s);
+                currentNonet.add(s);
 
                 board.add(s);
             }
@@ -117,7 +115,7 @@ public class Sudoku {
         if (index == board.size()) {
             return isComplete();
         }
-        Square s = board.get(index);
+        Cell s = board.get(index);
         // Do not alter 'final' values
         if (s.isFinal()) {
             return solve(index + 1);
@@ -134,7 +132,7 @@ public class Sudoku {
                     }
                 }
             }
-            // When all attempts fail for this square, reset and return up stack
+            // When all attempts fail for this square, reset and return
             s.setValue(0);
             return false;
         }
@@ -148,7 +146,7 @@ public class Sudoku {
      *         solved.
      */
     public boolean isComplete() {
-        for (Square s : board) {
+        for (Cell s : board) {
             if (!s.isValid()) {
                 return false;
             }
@@ -157,28 +155,10 @@ public class Sudoku {
     }
 
     /**
-     * Print representation of this Suduko puzzle to standard output
-     */
-    public void print() {
-        // TODO: Introduce Outputstream parameter, make local grids visible
-        System.out.print(" ------------------------------------- \n");
-        for (int i = 0; i < board.size(); i++) {
-            if (i % 9 == 0 && i != 0) {
-                System.out.print(" |\n");
-                System.out.print(" ------------------------------------- \n");
-            }
-            System.out.print(" | " + board.get(i).getValue());
-            if (i == board.size() - 1) {
-                System.out.print(" | ");
-            }
-        }
-        System.out.print("\n ------------------------------------- \n");
-    }
-
-    /**
-     * Milliseconds that the puzzle took to solve 
-     * @return long representation of milliseconds that the puzzle took to solve 
-     * or -1 if unsolved.
+     * Milliseconds that the puzzle took to solve
+     * 
+     * @return long representation of milliseconds that the puzzle took to solve
+     *         or -1 if unsolved.
      */
     public long getTimeToSolve() {
         return timeToSolve;
@@ -188,7 +168,7 @@ public class Sudoku {
      * Reset this Suduko
      */
     public void reset() {
-        for (Square s : board) {
+        for (Cell s : board) {
             if (!s.isFinal()) {
                 s.setValue(0);
             }
@@ -206,4 +186,93 @@ public class Sudoku {
     public int getCombosTried() {
         return combosTried;
     }
+    
+
+    /**
+     * Print representation of this Suduko puzzle to standard output 
+     * a each nonet will be separated by double line, otherwise
+     * cells will be separated by single line
+     * 
+     *  ╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗ 
+     *  ║ 8 │ 1 │ 5 ║ 9 │ 2 │ 7 ║ 6 │ 3 │ 4 ║ 
+     *  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ 
+     *  ║ 9 │ 7 │ 6 ║ 1 │ 3 │ 4 ║ 8 │ 5 │ 2 ║ 
+     *  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ 
+     *  ║ 3 │ 2 │ 4 ║ 6 │ 8 │ 5 ║ 7 │ 1 │ 9 ║ 
+     *  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣ 
+     *  ║ 4 │ 6 │ 1 ║ 8 │ 9 │ 2 ║ 3 │ 7 │ 5 ║ 
+     *  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ 
+     *  ║ 5 │ 8 │ 3 ║ 7 │ 4 │ 6 ║ 9 │ 2 │ 1 ║ 
+     *  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ 
+     *  ║ 2 │ 9 │ 7 ║ 3 │ 5 │ 1 ║ 4 │ 8 │ 6 ║ 
+     *  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣ 
+     *  ║ 1 │ 5 │ 9 ║ 4 │ 7 │ 8 ║ 2 │ 6 │ 3 ║ 
+     *  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ 
+     *  ║ 7 │ 3 │ 2 ║ 5 │ 6 │ 9 ║ 1 │ 4 │ 8 ║ 
+     *  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ 
+     *  ║ 6 │ 4 │ 8 ║ 2 │ 1 │ 3 ║ 5 │ 9 │ 7 ║ 
+     *  ╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝ 
+     * 
+     */
+    public void print(Appendable out) {
+        print(" ╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗ \n", out);
+        printDoubleVerticleLine(out);
+        print(board.get(0).getValue(), out);
+        for (int i = 1; i < board.size(); i++) {
+            // New Row
+            if (i % ROW_SIZE == 0) {
+                printDoubleVerticleLine(out);
+                // Every 3rd row double line
+                if (i % (ROW_SIZE * 3) == 0) {
+                    printDoubleHorizontalLine(out);
+                } else {
+                    printSingleHorizontalLine(out);
+                }
+                printDoubleVerticleLine(out);
+            } else if (i % 3 == 0) {
+                printDoubleVerticleLine(out);
+            } else {
+                printSingleVerticleLine(out);
+            }
+            print(board.get(i).getValue(), out);
+        }
+        printDoubleVerticleLine(out);
+        print("\n ╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝ \n", out);
+    }
+
+    private void printSingleHorizontalLine(Appendable out) {
+        print("\n ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ \n", out);
+    }
+
+    private void printSingleVerticleLine(Appendable out) {
+        print(" │ ", out);
+    }
+
+    private void printDoubleVerticleLine(Appendable out) {
+        print(" ║ ", out);
+    }
+
+    private void printDoubleHorizontalLine(Appendable out) {
+        print("\n ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣ \n", out);
+    }
+
+    private void print(Object value, Appendable out) {
+        System.out.print(value);
+    }
+
+
+    public static void main(String[] args) {
+        try {
+            Sudoku s = Sudoku
+                    .create("C:\\Users\\Matt\\Documents\\Sudoku\\1.txt");
+            s.solve();
+            s.print(System.out);
+        } catch (FileNotFoundException e) {
+
+        }
+    }
+
+    private static final String FILE_DELIMITER = ",";
+    private static final int ROW_SIZE = 9;
+    private static final int ROW_COUNT = 9;
 }
