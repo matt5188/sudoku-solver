@@ -1,23 +1,22 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.github.sudukosolver;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 /**
+ * Class to solve Sudoku puzzles by loading a puzzle form a file.
+ * Ability to print Sudoku and statistics.
  * 
  * @author Matt
  *
  */
 public class Sudoku {
     // Internal representation of the board
-    private List<Cell> board = new ArrayList<Cell>(81);
+    private List<Cell> board;
     private boolean isComplete;
     // Milliseconds that this puzzle took to solve, or -1 if unsolved
     private long timeToSolve;
@@ -25,14 +24,38 @@ public class Sudoku {
     private int combosTried;
 
     private Sudoku() {
+        board = new ArrayList<Cell>(81);
+        timeToSolve = -1;
         isComplete = false;
         combosTried = 0;
     }
 
+    /**
+     * file path to a Sudoku to solve. File must be in format of where each line
+     * has 9 0-9 digits separated by a comma. 0 means an unknown value. There
+     * should be 9 lines of 9 as per diagram below.
+     * 
+     * 
+     *   0,0,0,9,2,0,0,0,4 
+     *   0,7,0,0,0,0,8,5,0 
+     *   0,0,0,6,0,5,0,0,0 
+     *   4,0,0,8,0,0,3,0,5
+     *   5,0,0,0,0,0,0,0,1 
+     *   2,0,7,0,0,1,0,0,6 
+     *   0,0,0,4,0,8,0,0,0 
+     *   0,3,2,0,0,0,0,4,0
+     *   6,0,0,0,1,3,0,0,0
+     * 
+     * @param filepath
+     *            absolute path to file containing Sudoku
+     * @return Sudoku object representing file
+     * @throws FileNotFoundException
+     *             when the is file not found
+     */
     public static Sudoku create(String filepath) throws FileNotFoundException {
         Sudoku sudoku = new Sudoku();
         sudoku.populate(filepath);
-
+        
         return sudoku;
     }
 
@@ -96,6 +119,9 @@ public class Sudoku {
     /**
      * Attempt to solve this Sudoku. Use <code>isComplete()</code> to check if
      * puzzle was solved.
+     * This method attempts to solve the puzzle by trying all possible combinations
+     * starting from the top left cell and advancing left to right returning the first
+     * correct solution. Therefore there may be other solutions to the puzzle.
      */
     public void solve() {
         if (board.isEmpty()) {
@@ -174,50 +200,47 @@ public class Sudoku {
             }
             isComplete = false;
             timeToSolve = -1;
+            combosTried = 0;
         }
     }
 
     /**
      * How many permutations of values were attempted when completing this
-     * Suduko
+     * Sudoku
      * 
      * @return int value of count of permutations or 0 if unsolved
      */
     public int getCombosTried() {
         return combosTried;
     }
+
+
+    /* Printing */
     
+    /**
+     * Print statistics about the sudoku , the time taken to complete and
+     * combonations tried to complete
+     * 
+     * @param out
+     *            Output stream
+     * @throws IOException 
+     */
+    public void printStatistics(Appendable out) throws IOException {
+        print("Time taken to solve : " + getTimeToSolve() + "ms", out);
+        print("\nCombonations tried : " + getCombosTried() + "\n", out);
+    }
 
     /**
-     * Print representation of this Suduko puzzle to standard output 
-     * a each nonet will be separated by double line, otherwise
-     * cells will be separated by single line
-     * 
-     *  ╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗ 
-     *  ║ 8 │ 1 │ 5 ║ 9 │ 2 │ 7 ║ 6 │ 3 │ 4 ║ 
-     *  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ 
-     *  ║ 9 │ 7 │ 6 ║ 1 │ 3 │ 4 ║ 8 │ 5 │ 2 ║ 
-     *  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ 
-     *  ║ 3 │ 2 │ 4 ║ 6 │ 8 │ 5 ║ 7 │ 1 │ 9 ║ 
-     *  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣ 
-     *  ║ 4 │ 6 │ 1 ║ 8 │ 9 │ 2 ║ 3 │ 7 │ 5 ║ 
-     *  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ 
-     *  ║ 5 │ 8 │ 3 ║ 7 │ 4 │ 6 ║ 9 │ 2 │ 1 ║ 
-     *  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ 
-     *  ║ 2 │ 9 │ 7 ║ 3 │ 5 │ 1 ║ 4 │ 8 │ 6 ║ 
-     *  ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣ 
-     *  ║ 1 │ 5 │ 9 ║ 4 │ 7 │ 8 ║ 2 │ 6 │ 3 ║ 
-     *  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ 
-     *  ║ 7 │ 3 │ 2 ║ 5 │ 6 │ 9 ║ 1 │ 4 │ 8 ║ 
-     *  ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ 
-     *  ║ 6 │ 4 │ 8 ║ 2 │ 1 │ 3 ║ 5 │ 9 │ 7 ║ 
-     *  ╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝ 
+     * Print representation of this Suduko puzzle to standard output a each
+     * nonet will be separated by double line, otherwise cells will be separated
+     * by single line
+     * @throws IOException 
      * 
      */
-    public void print(Appendable out) {
-        print(" ╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗ \n", out);
+    public void print(Appendable out) throws IOException {
+        printTop(out);
         printDoubleVerticleLine(out);
-        print(board.get(0).getValue(), out);
+        print(String.valueOf(board.get(0).getValue()), out);
         for (int i = 1; i < board.size(); i++) {
             // New Row
             if (i % ROW_SIZE == 0) {
@@ -234,45 +257,123 @@ public class Sudoku {
             } else {
                 printSingleVerticleLine(out);
             }
-            print(board.get(i).getValue(), out);
+            print(String.valueOf(board.get(i).getValue()), out);
         }
         printDoubleVerticleLine(out);
+        printBottom(out);
+    }
+
+    private void printTop(Appendable out) throws IOException {
+        print(" ╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗ \n", out);
+    }
+
+    private void printBottom(Appendable out) throws IOException {
         print("\n ╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝ \n", out);
     }
 
-    private void printSingleHorizontalLine(Appendable out) {
-        print("\n ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ \n", out);
-    }
-
-    private void printSingleVerticleLine(Appendable out) {
+    private void printSingleVerticleLine(Appendable out) throws IOException {
         print(" │ ", out);
     }
 
-    private void printDoubleVerticleLine(Appendable out) {
+    private void printDoubleVerticleLine(Appendable out) throws IOException {
         print(" ║ ", out);
     }
 
-    private void printDoubleHorizontalLine(Appendable out) {
+    private void printDoubleHorizontalLine(Appendable out) throws IOException {
         print("\n ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣ \n", out);
     }
-
-    private void print(Object value, Appendable out) {
-        System.out.print(value);
+    
+    private void printSingleHorizontalLine(Appendable out) throws IOException {
+        print("\n ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢ \n", out);
     }
 
+    private void print(String value, Appendable out) throws IOException {
+        out.append(value);
+    }
 
+    /**
+     * 
+     * @param args Single argument of a file path to a Sudoku to solve. 
+     * File must be in format of where each line has 9 0-9 digits separated 
+     * by a comma. 0 means an unknown value. There should be 9 lines of 9 
+     * as per diagram below 
+     * 
+     *  0,0,0,9,2,0,0,0,4
+     *  0,7,0,0,0,0,8,5,0
+     *  0,0,0,6,0,5,0,0,0
+     *  4,0,0,8,0,0,3,0,5
+     *  5,0,0,0,0,0,0,0,1
+     *  2,0,7,0,0,1,0,0,6
+     *  0,0,0,4,0,8,0,0,0
+     *  0,3,2,0,0,0,0,4,0
+     *  6,0,0,0,1,3,0,0,0
+     *   
+     */
     public static void main(String[] args) {
-        try {
-            Sudoku s = Sudoku
-                    .create("C:\\Users\\Matt\\Documents\\Sudoku\\1.txt");
-            s.solve();
-            s.print(System.out);
-        } catch (FileNotFoundException e) {
 
+        if (args.length == 0) {
+            throw new IllegalArgumentException("Must specify file path");
         }
+        Sudoku sudoku = null;
+        try {
+            sudoku = Sudoku.create(args[0]);
+        } catch (Exception e) {
+            System.err.println("Error creating Sudoku " + e.getMessage());
+            System.exit(0);
+        }
+
+        Scanner scan = new Scanner(System.in);
+
+        printUsage();
+        
+        try {
+            while (true) {
+                System.out.println("Enter argument");
+                String argument = scan.next();
+                switch (argument) {
+                case "s":
+                    sudoku.solve();
+                    System.out.println(sudoku.isComplete());
+                    break;
+                case "t":
+                    sudoku.printStatistics(System.out);
+                    break;
+                case "p":
+                    sudoku.print(System.out);
+                    break;
+                case "r":
+                    sudoku.reset();
+                    break;
+                case "o":
+                    printUsage();
+                    break;
+                case "x":
+                    scan.close();
+                    System.exit(0);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error processing Sudoku" + e.getMessage());
+            System.exit(0);
+        }finally{
+            scan.close();
+        }
+    }
+
+    private static void printUsage() {
+        System.out.print("Usage\n");
+        System.out.println(
+            "s : solve Sudoku. Prints true is solved or false otherwise"
+        );
+        System.out.println("t : print statistics about Sudoko");
+        System.out.println("p : print Sudoku");
+        System.out.println("r : reset the Sudoku");
+        System.out.println("o : print options");
+        System.out.println("x : exit");
     }
 
     private static final String FILE_DELIMITER = ",";
     private static final int ROW_SIZE = 9;
     private static final int ROW_COUNT = 9;
 }
+
