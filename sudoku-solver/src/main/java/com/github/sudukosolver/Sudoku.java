@@ -95,7 +95,7 @@ public class Sudoku {
                     value = Integer.parseInt(nextRow[x]);
                 } catch (NumberFormatException e) {
                 }
-
+                
                 // Create a new square to represent this location on the board
                 Cell s = new Cell(y, x, value);
                 // Keep a pointer to squares local to this (row, local grid,
@@ -172,12 +172,7 @@ public class Sudoku {
      *         solved.
      */
     public boolean isComplete() {
-        for (Cell s : board) {
-            if (!s.isValid()) {
-                return false;
-            }
-        }
-        return true;
+        return board.stream().allMatch(c -> c.isValid());
     }
 
     /**
@@ -194,14 +189,11 @@ public class Sudoku {
      * Reset this Suduko
      */
     public void reset() {
-        for (Cell s : board) {
-            if (!s.isFinal()) {
-                s.setValue(0);
-            }
-            isComplete = false;
-            timeToSolve = -1;
-            combosTried = 0;
-        }
+        board.stream().filter(c -> !c.isFinal()).forEach(c -> c.setValue(0));
+        isComplete = false;
+        timeToSolve = -1;
+        combosTried = 0;
+
     }
 
     /**
