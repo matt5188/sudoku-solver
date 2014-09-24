@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.github.sudukosolver;
 
 import java.util.ArrayList;
@@ -9,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- *  Internal class to represent a single cell on a suduko board
+ *  Internal class to represent a single cell on a sudoku board
  * @author matt
  */
 class Cell implements Comparable<Cell> {
@@ -40,10 +36,6 @@ class Cell implements Comparable<Cell> {
 
     public void addColumnSquare(Cell square) {
         this.column.add(square);
-    }
-
-    private void addNonetCell(Cell square) {
-        this.localNonet.add(square);
     }
 
     private int getX() {
@@ -118,31 +110,13 @@ class Cell implements Comparable<Cell> {
         if (!isSet()) {
             return false;
         }
-        for (Cell s : column) {
-            if (this.equals(s)) {
-                continue;
-            }
-            if (s.value == value) {
-                return false;
-            }
-        }
-        for (Cell s : localNonet) {
-            if (this.equals(s)) {
-                continue;
-            }
-            if (s.value == value) {
-                return false;
-            }
-        }
-        for (Cell s : row) {
-            if (this.equals(s)) {
-                continue;
-            }
-            if (s.value == value) {
-                return false;
-            }
-        }
-        return true;
+        return valid(row) && valid(localNonet) && valid(column);
+    }
+
+    private boolean valid(List<Cell> cells) {
+        return cells.stream()
+        .filter(s -> !this.equals(s))
+        .noneMatch(s -> s.getValue() == this.value);
     }
 
     public boolean isSet() {
@@ -169,4 +143,3 @@ class Cell implements Comparable<Cell> {
         return value;
     }
 }
-
