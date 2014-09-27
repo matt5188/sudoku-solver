@@ -74,14 +74,6 @@ public abstract class AbstractSuduko<E extends AbstractCell> {
             for (int i = 1; i <= 9; i++) {
                 s.setValue(i);
                 combosTried++;
-                if(combosTried % 6000000 == 0 ){
-                    try {
-                        printer.print(System.out);
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
                 // If this is a valid value move on to the next square
                 if (s.isValid()) {
                     boolean done = solve(index + 1);
